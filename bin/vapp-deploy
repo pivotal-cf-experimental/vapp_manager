@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+require 'vapp_manager'
+require 'logger'
+
+%w(
+  VAPP_DEPLOYER_CREDS_URL
+  VAPP_DEPLOYER_CREDS_ORGANIZATION
+  VAPP_DEPLOYER_CREDS_USER
+  VAPP_DEPLOYER_CREDS_PASSWORD
+  VAPP_DEPLOYER_VDC_NAME
+  VAPP_DEPLOYER_VDC_CATALOG
+  VAPP_DEPLOYER_VDC_NETWORK
+  VAPP_DEPLOYER_VAPP_TEMPLATE_PATH
+  VAPP_DEPLOYER_VAPP_NAME
+  VAPP_DEPLOYER_VAPP_IP
+  VAPP_DEPLOYER_VAPP_GATEWAY
+  VAPP_DEPLOYER_VAPP_DNS
+  VAPP_DEPLOYER_VAPP_NTP
+  VAPP_DEPLOYER_VAPP_NETMASK
+).each do |env_var|
+  raise "Missing ENV variable #{env_var}" unless ENV[env_var]
+end
+
+logger       = Logger.new(STDOUT)
+logger.level = Logger::Severity::UNKNOWN
+
+VappManager::Deployer.new(
+  {
+    url:          ENV['VAPP_DEPLOYER_CREDS_URL'],
+    organization: ENV['VAPP_DEPLOYER_CREDS_ORGANIZATION'],
+    user:         ENV['VAPP_DEPLOYER_CREDS_USER'],
+    password:     ENV['VAPP_DEPLOYER_CREDS_PASSWORD'],
+  },
+  {
+    vdc:     ENV['VAPP_DEPLOYER_VDC_NAME'],
+    catalog: ENV['VAPP_DEPLOYER_VDC_CATALOG'],
+    network: ENV['VAPP_DEPLOYER_VDC_NETWORK']
+  },
+  logger
+).deploy(
+  ENV['VAPP_DEPLOYER_VAPP_TEMPLATE_PATH'],
+  {
+    name:    ENV['VAPP_DEPLOYER_VAPP_NAME'],
+    ip:      ENV['VAPP_DEPLOYER_VAPP_IP'],
+    gateway: ENV['VAPP_DEPLOYER_VAPP_GATEWAY'],
+    dns:     ENV['VAPP_DEPLOYER_VAPP_DNS'],
+    ntp:     ENV['VAPP_DEPLOYER_VAPP_NTP'],
+    netmask: ENV['VAPP_DEPLOYER_VAPP_NETMASK']
+  }
+)
