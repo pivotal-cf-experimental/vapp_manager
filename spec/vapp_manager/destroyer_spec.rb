@@ -48,6 +48,30 @@ module VappManager
 
           destroyer.destroy(vapp_name)
         end
+
+        context 'when an VCloudSdk::ObjectNotFoundError is thrown' do
+          before do
+            allow(VCloudSdk::Client).to receive(:new).and_return(client)
+            allow(client).to receive(:find_vdc_by_name).and_return(vdc)
+            allow(vdc).to receive(:find_vapp_by_name).and_return(vapp)
+            allow(vapp).to receive(:power_off)
+            allow(vapp).to receive(:delete)
+
+            allow(client).to receive(:delete_catalog_by_name)
+          end
+
+          it 'catches the error' do
+            allow(client).to receive(:find_vdc_by_name).and_raise(VCloudSdk::ObjectNotFoundError)
+
+            expect { destroyer.destroy(vapp_name) }.not_to raise_error
+          end
+
+          it 'deletes to catalog' do
+            expect(client).to receive(:delete_catalog_by_name).with(location.fetch(:catalog))
+
+            destroyer.destroy(vapp_name)
+          end
+        end
       end
 
       context 'when the catalog does not exist' do
