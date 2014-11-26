@@ -7,6 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'vapp_manager'
   spec.version       = VappManager::VERSION
   spec.authors       = ['']
+  spec.email         = ['']
   spec.summary       = %q{CLI to deploy/destroy a VAPP on vCloud Director}
 
   spec.license       = 'MIT'

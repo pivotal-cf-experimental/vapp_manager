@@ -14,16 +14,17 @@ module VappManager
     end
 
     def deploy(vapp_template_tar_path, vapp_config)
+      tmpdir = Dir.mktmpdir
+
       check_vapp_status(vapp_config)
 
-      vapp_template_tar_path = File.expand_path(vapp_template_tar_path)
-      ovf_dir = untar_vapp_template_tar(vapp_template_tar_path)
+      untar_vapp_template_tar(File.expand_path(vapp_template_tar_path), tmpdir)
 
-      vapp = deploy_vapp(ovf_dir, vapp_config)
+      vapp = deploy_vapp(tmpdir, vapp_config)
       reconfigure_vm(vapp, vapp_config)
       vapp.power_on
     ensure
-      FileUtils.remove_entry_secure(ovf_dir, force: true)
+      FileUtils.remove_entry_secure(tmpdir, force: true)
     end
 
     private
@@ -35,11 +36,9 @@ module VappManager
       end
     end
 
-    def untar_vapp_template_tar(vapp_template_tar_path)
+    def untar_vapp_template_tar(vapp_template_tar_path, dir)
       log("Untarring #{vapp_template_tar_path}") do
-        Dir.mktmpdir.tap do |dir|
-          system_or_exit("cd #{dir} && tar xfv '#{vapp_template_tar_path}'")
-        end
+        system_or_exit("cd #{dir} && tar xfv '#{vapp_template_tar_path}'")
       end
     end
 
@@ -136,13 +135,15 @@ module VappManager
     end
 
     def log(title, &blk)
-      puts "--- Running: #{title} @ #{DateTime.now}"
+      @logger.debug "--- Begin: #{title.inspect} @ #{DateTime.now}"
       blk.call
+      @logger.debug "---   End: #{title.inspect} @ #{DateTime.now}"
     end
 
-    def system_or_exit(*args)
-      puts "--- Running: #{args} @ #{DateTime.now}"
-      system(*args) || fail('FAILED')
+    def system_or_exit(command)
+      log(command) do
+        system(command) || raise("Error executing: #{command.inspect}")
+      end
     end
   end
 end
