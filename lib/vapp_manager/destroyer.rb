@@ -34,7 +34,7 @@ module VappManager
       vapp.power_off
       vapp.delete
     rescue VCloudSdk::ObjectNotFoundError => e
-      puts "Could not delete vapp '#{vapp_name}': #{e.inspect}"
+      @logger.debug "Could not delete vapp '#{vapp_name}': #{e.inspect}"
     end
 
     def delete_catalog

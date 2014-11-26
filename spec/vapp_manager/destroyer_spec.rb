@@ -16,7 +16,7 @@ module VappManager
         vdc: 'FAKE_VDC',
       }
     end
-    let(:logger) { instance_double(Logger) }
+    let(:logger) { instance_double(Logger).as_null_object }
 
     let(:destroyer) { Destroyer.new(login_info, location, logger) }
 
